@@ -142,7 +142,7 @@
 
     <!-- Create Modal -->
     @if($showCreateModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto" x-data x-trap.noscroll="true">
+        <div class="fixed inset-0 z-50 overflow-y-auto" x-data @keydown.escape.window="$wire.$set('showCreateModal', false)">
             <div class="flex items-end sm:items-center justify-center min-h-full p-4">
                 <!-- Backdrop -->
                 <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 transition-opacity" wire:click="$set('showCreateModal', false)"></div>

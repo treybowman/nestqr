@@ -22,17 +22,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label for="city" class="label">City</label>
-                        <input wire:model="city" type="text" id="city" class="input-field" placeholder="Austin">
+                        <input wire:model="city" type="text" id="city" class="input-field" placeholder="Atlanta">
                         @error('city') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="state" class="label">State</label>
-                        <input wire:model="state" type="text" id="state" class="input-field" placeholder="TX" maxlength="2">
+                        <input wire:model="state" type="text" id="state" class="input-field" placeholder="GA" maxlength="2">
                         @error('state') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="zip" class="label">ZIP Code</label>
-                        <input wire:model="zip" type="text" id="zip" class="input-field" placeholder="78701">
+                        <input wire:model="zip" type="text" id="zip" class="input-field" placeholder="30039">
                         @error('zip') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
                 </div>
