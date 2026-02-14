@@ -284,8 +284,7 @@ class QRCodeService
 
     public function getRedirectUrl(QrSlot $slot): string
     {
-        $domain = config('nestqr.primary_domain', 'nestqr.com');
-        return "https://{$domain}/{$slot->short_code}";
+        return $slot->getPublicUrl();
     }
 
     public function generatePdf(QrSlot $slot): string
