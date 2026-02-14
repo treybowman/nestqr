@@ -31,7 +31,7 @@ class QrSlotController extends Controller
         $qrSlot->load(['icon', 'currentListing']);
 
         return view('qr-slots.show', [
-            'qrSlot' => $qrSlot,
+            'slot' => $qrSlot,
         ]);
     }
 
