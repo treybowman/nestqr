@@ -1,0 +1,17 @@
+# Secrets
+.env
+*.key
+*.pem
+
+# Uploads and runtime data
+public/uploads/
+*.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Dependencies (if you add composer/node later)
+vendor/
+node_modules/

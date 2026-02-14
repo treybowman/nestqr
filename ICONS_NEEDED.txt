@@ -1,0 +1,54 @@
+ICON ASSETS NEEDED
+==================
+
+You'll need to create 30 icon images (80x80px PNG) for the QR code corner identifier system.
+
+Place them in: public/assets/icons/
+
+Required icons (match the filenames in database.sql):
+
+FREE TIER (10 icons):
+- house.png
+- tree.png
+- key.png
+- building.png
+- pin.png
+- door.png
+- star.png
+- sunset.png
+- cottage.png
+- diamond.png
+
+PRO TIER (20 icons):
+- window.png
+- furniture.png
+- beach.png
+- mountain.png
+- pool.png
+- target.png
+- bell.png
+- flower.png
+- castle.png
+- warehouse.png
+- cityscape.png
+- pine.png
+- palm.png
+- construction.png
+- paintbrush.png
+- fire.png
+- snowflake.png
+- sun.png
+- moon.png
+- tent.png
+
+SPECIAL ICON:
+- nestqr-icon.png (120x120px) - Goes in public/assets/images/
+  This is the center logo for QR codes. Extract from your logo SVG.
+
+You can:
+1. Design custom icons
+2. Use emoji-to-PNG converters
+3. Purchase icon packs (Flaticon, etc.)
+4. Use AI image generation
+
+Tip: Keep them simple, high contrast, and recognizable when small!
