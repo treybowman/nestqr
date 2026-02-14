@@ -39,6 +39,7 @@ class AnalyticsService
             'total_qr_codes' => $user->qrSlots()->count(),
             'active_listings' => $user->listings()->where('status', 'active')->count(),
             'assigned_qr_codes' => $user->qrSlots()->whereNotNull('current_listing_id')->count(),
+            'max_qr_codes' => $user->maxQrSlots(),
         ];
     }
 
