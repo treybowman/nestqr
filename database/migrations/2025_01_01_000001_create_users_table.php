@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('custom_brand_color', 7)->nullable();
             $table->enum('theme_preference', ['light', 'dark'])->default('light');
             $table->boolean('is_admin')->default(false);
-            $table->foreignId('company_id')->nullable()->constrained();
+            $table->unsignedBigInteger('company_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
