@@ -10,6 +10,8 @@ class ScanAnalytic extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'qr_slot_id',
         'listing_id',

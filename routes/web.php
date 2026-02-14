@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PublicListingController;
 use App\Http\Controllers\QrSlotController;
 use App\Http\Controllers\SettingsController;
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// Static pages
+Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms');
+Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 
 // Stripe webhooks (must be before auth middleware)
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])->name('cashier.webhook');

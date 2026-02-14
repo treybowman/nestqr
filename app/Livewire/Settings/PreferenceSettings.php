@@ -4,12 +4,8 @@ namespace App\Livewire\Settings;
 
 use App\Models\ActiveDomain;
 use Illuminate\Database\Eloquent\Collection;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
-#[Title('Preferences')]
 class PreferenceSettings extends Component
 {
     public string $themePreference = 'system';
@@ -26,6 +22,12 @@ class PreferenceSettings extends Component
         $this->domains = ActiveDomain::active()->orderBy('market_name')->get();
     }
 
+    public function updatedThemePreference(string $value): void
+    {
+        // Apply theme immediately in the browser
+        $this->dispatch('theme-changed', theme: $value);
+    }
+
     public function save(): void
     {
         $validDomains = $this->domains->pluck('domain')->toArray();
@@ -33,9 +35,6 @@ class PreferenceSettings extends Component
         $this->validate([
             'themePreference' => ['required', 'in:light,dark,system'],
             'preferredDomain' => ['nullable', 'string', 'in:' . implode(',', array_merge([''], $validDomains))],
-        ], [
-            'themePreference.in' => 'Please select a valid theme option.',
-            'preferredDomain.in' => 'Please select a valid domain.',
         ]);
 
         /** @var \App\Models\User $user */

@@ -85,7 +85,7 @@ class QrSlot extends Model
     public function isIconLocked(): bool
     {
         return $this->icon_locked_at
-            && $this->icon_locked_at->diffInHours(now()) >= config('nestqr.icon_lock_hours', 24);
+            && $this->icon_locked_at->diffInHours(now()) < config('nestqr.icon_lock_hours', 24);
     }
 
     public function canChangeIcon(): bool
@@ -95,7 +95,7 @@ class QrSlot extends Model
 
     public function getPublicUrl(): string
     {
-        $domain = $this->user?->preferred_domain ?? config('nestqr.default_domain', 'nestqr.com');
+        $domain = $this->user?->preferred_domain ?? config('nestqr.primary_domain', 'nestqr.com');
 
         return 'https://' . $domain . '/' . $this->short_code;
     }
