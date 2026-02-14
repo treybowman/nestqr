@@ -53,4 +53,26 @@ class ListingController extends Controller
             'listing' => $listing,
         ]);
     }
+
+    /**
+     * Delete the specified listing.
+     */
+    public function destroy(Listing $listing)
+    {
+        $this->authorize('delete', $listing);
+
+        // Unassign from QR slot if assigned
+        $listing->unassignFromQrSlot();
+
+        // Delete photos from storage
+        foreach ($listing->photos as $photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->file_path);
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->thumbnail_path);
+        }
+        $listing->photos()->delete();
+
+        $listing->delete();
+
+        return redirect()->route('listings.index')->with('message', 'Listing deleted successfully.');
+    }
 }

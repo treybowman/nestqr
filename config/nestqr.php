@@ -135,7 +135,7 @@ return [
         'free' => [
             'name' => 'Free',
             'qr_slots' => 10,
-            'icons' => 10,
+            'icons' => 15,
             'analytics' => 'basic',
             'custom_branding' => false,
             'price' => 0,
@@ -143,7 +143,7 @@ return [
         'pro' => [
             'name' => 'Pro',
             'qr_slots' => 25,
-            'icons' => 30,
+            'icons' => PHP_INT_MAX,
             'analytics' => 'advanced',
             'custom_branding' => true,
             'price' => 2500,
@@ -152,7 +152,7 @@ return [
         'unlimited' => [
             'name' => 'Unlimited',
             'qr_slots' => PHP_INT_MAX,
-            'icons' => 30,
+            'icons' => PHP_INT_MAX,
             'analytics' => 'advanced',
             'custom_branding' => true,
             'price' => 5000,
@@ -161,7 +161,7 @@ return [
         'company' => [
             'name' => 'Company',
             'qr_slots' => PHP_INT_MAX,
-            'icons' => 30,
+            'icons' => PHP_INT_MAX,
             'analytics' => 'advanced',
             'custom_branding' => true,
             'base_price' => 10000,

@@ -4,19 +4,13 @@ namespace App\Jobs;
 
 use App\Models\ListingPhoto;
 use App\Services\ImageService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ProcessListingPhotosJob implements ShouldQueue
+class ProcessListingPhotosJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public int $tries = 3;
+    use Dispatchable;
 
     /**
      * @param  int  $listingId
@@ -26,7 +20,6 @@ class ProcessListingPhotosJob implements ShouldQueue
         public readonly int $listingId,
         public readonly array $tempFilePaths,
     ) {
-        $this->onQueue('image-processing');
     }
 
     public function handle(ImageService $imageService): void
@@ -67,8 +60,4 @@ class ProcessListingPhotosJob implements ShouldQueue
         Log::info("Processed photos for listing [{$this->listingId}].");
     }
 
-    public function failed(\Throwable $exception): void
-    {
-        Log::error("ProcessListingPhotosJob failed for listing [{$this->listingId}]: {$exception->getMessage()}");
-    }
 }

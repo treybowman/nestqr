@@ -44,9 +44,9 @@ class QRCodeService
 
         $writer = new PngWriter();
 
-        // Brand logo in center (20% of QR size)
-        $brandLogoPath = storage_path('app/public/' . config('nestqr.logo_path'));
+        // Brand logo in center (20% of QR size) - optional
         $logo = null;
+        $brandLogoPath = storage_path('app/public/' . config('nestqr.logo_path'));
         if (file_exists($brandLogoPath)) {
             $logoSize = (int) ($size * config('nestqr.brand_logo_ratio'));
             $logo = new Logo(
@@ -64,8 +64,8 @@ class QRCodeService
         $filename = "{$quality}.png";
         Storage::disk('public')->put("{$basePath}/{$filename}", $result->getString());
 
-        // Overlay the agent's icon in bottom-right if assigned
-        if ($slot->icon && $slot->icon->svg_path) {
+        // Overlay the agent's icon in bottom-right if assigned and SVG exists
+        if ($slot->icon && $slot->icon->svg_path && $slot->icon->svg_path !== '') {
             $this->overlayIcon($slot, $basePath, $filename, $size);
         }
 

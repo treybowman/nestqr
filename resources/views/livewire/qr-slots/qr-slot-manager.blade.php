@@ -158,15 +158,35 @@
                     </div>
 
                     <!-- Body -->
-                    <div class="px-6 py-4">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Choose an icon for your QR code. This icon will be embedded in the center of the generated QR code.</p>
+                    <div class="px-6 py-4" x-data="{ search: '', activeCategory: 'all' }">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Choose an icon to identify your QR code.</p>
 
                         @error('selectedIconId')
-                            <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{{ $message }}</div>
+                            <div class="mb-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">{{ $message }}</div>
                         @enderror
 
+                        <!-- Search -->
+                        <div class="relative mb-3">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <input type="text" x-model="search" placeholder="Search icons..." class="input-field pl-9 py-2 text-sm">
+                        </div>
+
+                        <!-- Category Tabs -->
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            @php
+                                $categories = ['all' => 'All', 'real-estate' => 'Property', 'amenities' => 'Amenities', 'nature' => 'Nature', 'lifestyle' => 'Lifestyle', 'marketing' => 'Marketing', 'seasonal' => 'Seasonal', 'general' => 'General'];
+                            @endphp
+                            @foreach($categories as $key => $label)
+                                <button
+                                    @click="activeCategory = '{{ $key }}'"
+                                    :class="activeCategory === '{{ $key }}' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                                    class="px-2.5 py-1 rounded-full text-[11px] font-medium transition"
+                                >{{ $label }}</button>
+                            @endforeach
+                        </div>
+
                         <!-- Icon Grid -->
-                        <div class="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-72 overflow-y-auto pr-1">
+                        <div class="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-72 overflow-y-auto pr-1">
                             @foreach($this->availableIcons as $icon)
                                 @php
                                     $canAccess = auth()->user()->canAccessIcon($icon);
@@ -174,18 +194,19 @@
                                 <button
                                     wire:click="$set('selectedIconId', {{ $icon->id }})"
                                     @if(!$canAccess) disabled @endif
-                                    class="relative flex flex-col items-center p-3 rounded-xl border-2 transition
+                                    x-show="(activeCategory === 'all' || activeCategory === '{{ $icon->category }}') && (search === '' || '{{ strtolower($icon->name) }}'.includes(search.toLowerCase()))"
+                                    class="relative flex flex-col items-center p-2 rounded-xl border-2 transition
                                         {{ $selectedIconId === $icon->id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600' }}
                                         {{ !$canAccess ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' }}"
                                 >
-                                    <span class="text-2xl">{{ $icon->emoji }}</span>
-                                    <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 truncate w-full text-center">{{ $icon->name }}</span>
+                                    <span class="text-xl">{{ $icon->emoji }}</span>
+                                    <span class="text-[9px] text-gray-500 dark:text-gray-400 mt-0.5 truncate w-full text-center leading-tight">{{ $icon->name }}</span>
                                     @if($icon->tier === 'pro' && !$canAccess)
-                                        <span class="absolute -top-1 -right-1 bg-primary-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">PRO</span>
+                                        <span class="absolute -top-1 -right-1 bg-primary-500 text-white text-[7px] font-bold px-1 py-0.5 rounded-full">PRO</span>
                                     @endif
                                     @if($selectedIconId === $icon->id)
-                                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 rounded-full flex items-center justify-center">
-                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-primary-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                         </div>
                                     @endif
                                 </button>

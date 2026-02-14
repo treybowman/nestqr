@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [ListingController::class, 'create'])->name('create');
         Route::get('/{listing}', [ListingController::class, 'show'])->name('show');
         Route::get('/{listing}/edit', [ListingController::class, 'edit'])->name('edit');
+        Route::delete('/{listing}', [ListingController::class, 'destroy'])->name('destroy');
     });
 
     // Analytics
