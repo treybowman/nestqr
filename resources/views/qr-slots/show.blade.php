@@ -37,7 +37,7 @@
                             <a href="{{ asset('storage/qr-codes/' . $slot->short_code . '/web.png') }}" download class="btn-secondary text-xs justify-center py-2">PNG Web</a>
                             <a href="{{ asset('storage/qr-codes/' . $slot->short_code . '/print.png') }}" download class="btn-secondary text-xs justify-center py-2">PNG Print</a>
                             <a href="{{ asset('storage/qr-codes/' . $slot->short_code . '/vector.svg') }}" download class="btn-secondary text-xs justify-center py-2">SVG</a>
-                            <a href="{{ asset('storage/qr-codes/' . $slot->short_code . '/print.pdf') }}" download class="btn-secondary text-xs justify-center py-2">PDF</a>
+                            <a href="{{ asset('storage/qr-codes/' . $slot->short_code . '/qr-code.pdf') }}" download class="btn-secondary text-xs justify-center py-2">PDF</a>
                         </div>
                     @endif
                 </div>

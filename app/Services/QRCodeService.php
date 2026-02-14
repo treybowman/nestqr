@@ -22,6 +22,7 @@ class QRCodeService
         $this->generatePng($slot, $url, 'web');
         $this->generatePng($slot, $url, 'print');
         $this->generateSvg($slot, $url);
+        $this->generatePdf($slot);
 
         $basePath = "qr-codes/{$slot->short_code}";
         $slot->update(['qr_image_path' => "{$basePath}/web.png"]);
