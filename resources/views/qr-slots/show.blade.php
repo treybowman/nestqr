@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.app>
     <x-slot:title>QR Code - {{ $slot->short_code }}</x-slot:title>
 
     <div class="max-w-4xl mx-auto space-y-6">
@@ -138,4 +138,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.app>

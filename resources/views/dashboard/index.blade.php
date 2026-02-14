@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.app>
     <x-slot:title>Dashboard</x-slot:title>
 
     <div class="space-y-6">
@@ -41,4 +41,4 @@
             </a>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.app>

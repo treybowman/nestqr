@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.app>
     <x-slot:title>Settings</x-slot:title>
     <div class="max-w-4xl mx-auto space-y-8">
         <livewire:settings.profile-settings />
@@ -8,4 +8,4 @@
         <livewire:settings.preference-settings />
         <livewire:settings.danger-zone />
     </div>
-</x-app-layout>
+</x-layouts.app>
