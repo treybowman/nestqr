@@ -299,8 +299,9 @@ class QRCodeService
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.qr-code', [
             'slot' => $slot,
-            'qrImageBase64' => base64_encode(file_get_contents($qrImagePath)),
-            'url' => $this->getRedirectUrl($slot),
+            'qrImageDataUri' => 'data:image/png;base64,' . base64_encode(file_get_contents($qrImagePath)),
+            'shortUrl' => $this->getRedirectUrl($slot),
+            'address' => $slot->currentListing?->address,
         ]);
 
         $pdfPath = "{$basePath}/qr-code.pdf";

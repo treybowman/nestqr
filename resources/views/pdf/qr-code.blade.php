@@ -17,34 +17,14 @@
 
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             background: #ffffff;
             color: #1f2937;
         }
 
         .page {
             width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 40px;
-            position: relative;
-        }
-
-        .content {
             text-align: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            padding: 100px 40px 40px;
         }
 
         .qr-container {
@@ -72,7 +52,6 @@
         .instructions {
             font-size: 16px;
             color: #6b7280;
-            max-width: 380px;
             line-height: 1.6;
             margin-bottom: 8px;
         }
@@ -83,26 +62,17 @@
             margin-top: 8px;
         }
 
+        .divider {
+            width: 60px;
+            height: 3px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            margin: 24px auto;
+        }
+
         .footer {
             text-align: center;
-            padding-bottom: 40px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .brand-icon {
-            width: 28px;
-            height: 28px;
-            background: #8e63f5;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-top: 40px;
         }
 
         .brand-name {
@@ -116,40 +86,28 @@
             color: #9ca3af;
             margin-top: 4px;
         }
-
-        .divider {
-            width: 60px;
-            height: 3px;
-            background: #e5e7eb;
-            border-radius: 2px;
-            margin: 24px auto;
-        }
     </style>
 </head>
 <body>
     <div class="page">
-        <div class="content">
-            <div class="qr-container">
-                <img src="{{ $qrImageDataUri ?? '' }}" alt="QR Code" class="qr-image">
-            </div>
-
-            <div class="short-url">{{ $shortUrl ?? '' }}</div>
-
-            <p class="instructions">
-                Scan this QR code to view the property listing
-            </p>
-
-            @if(isset($address) && $address)
-                <p class="address">{{ $address }}</p>
-            @endif
-
-            <div class="divider"></div>
+        <div class="qr-container">
+            <img src="{{ $qrImageDataUri ?? '' }}" alt="QR Code" class="qr-image">
         </div>
 
+        <div class="short-url">{{ $shortUrl ?? '' }}</div>
+
+        <p class="instructions">
+            Scan this QR code to view the property listing
+        </p>
+
+        @if(isset($address) && $address)
+            <p class="address">{{ $address }}</p>
+        @endif
+
+        <div class="divider"></div>
+
         <div class="footer">
-            <div class="brand">
-                <span class="brand-name">NestQR</span>
-            </div>
+            <div class="brand-name">NestQR</div>
             <p class="brand-tagline">QR Codes for Real Estate Agents</p>
         </div>
     </div>
