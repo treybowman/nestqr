@@ -64,9 +64,9 @@ class QRCodeService
         $filename = "{$quality}.png";
         Storage::disk('public')->put("{$basePath}/{$filename}", $result->getString());
 
-        // Overlay the agent's icon in bottom-right if assigned and SVG exists
-        if ($slot->icon && $slot->icon->svg_path && $slot->icon->svg_path !== '') {
-            $this->overlayIcon($slot, $basePath, $filename, $size);
+        // Overlay the emoji icon in bottom-right corner
+        if ($slot->icon && $slot->icon->emoji) {
+            $this->overlayEmojiIcon($slot, $basePath, $filename, $size);
         }
 
         return "{$basePath}/{$filename}";
@@ -92,35 +92,193 @@ class QRCodeService
         return "{$basePath}/vector.svg";
     }
 
-    protected function overlayIcon(QrSlot $slot, string $basePath, string $filename, int $size): void
+    /**
+     * Overlay the emoji icon on the QR code using Twemoji images.
+     * Downloads the emoji PNG from Twemoji CDN and caches it locally.
+     */
+    protected function overlayEmojiIcon(QrSlot $slot, string $basePath, string $filename, int $size): void
     {
-        $iconPath = storage_path('app/public/icons/' . $slot->icon->svg_path);
-        if (!file_exists($iconPath)) {
+        $qrPath = storage_path("app/public/{$basePath}/{$filename}");
+        if (!file_exists($qrPath)) {
             return;
         }
 
-        $qrPath = storage_path("app/public/{$basePath}/{$filename}");
-        $iconSize = (int) ($size * config('nestqr.icon_ratio'));
+        try {
+            // Get or download the emoji image
+            $emojiImagePath = $this->getEmojiImage($slot->icon->emoji);
+            if (!$emojiImagePath) {
+                return;
+            }
+
+            $badgeSize = (int) ($size * 0.18);
+            $iconSize = (int) ($badgeSize * 0.70);
+            $padding = (int) ($size * 0.015);
+
+            // Load QR code
+            $qrImage = imagecreatefrompng($qrPath);
+            imagealphablending($qrImage, true);
+            $qrWidth = imagesx($qrImage);
+            $qrHeight = imagesy($qrImage);
+
+            // Create badge (white circle with emoji)
+            $badge = imagecreatetruecolor($badgeSize, $badgeSize);
+            imagesavealpha($badge, true);
+            imagealphablending($badge, true);
+
+            // Fill transparent
+            $transparent = imagecolorallocatealpha($badge, 0, 0, 0, 127);
+            imagefill($badge, 0, 0, $transparent);
+
+            // Draw white circle background with slight shadow effect
+            $shadow = imagecolorallocatealpha($badge, 0, 0, 0, 110);
+            $center = (int) ($badgeSize / 2);
+            imagefilledellipse($badge, $center + 1, $center + 1, $badgeSize - 2, $badgeSize - 2, $shadow);
+
+            $white = imagecolorallocate($badge, 255, 255, 255);
+            imagefilledellipse($badge, $center, $center, $badgeSize - 2, $badgeSize - 2, $white);
+
+            // Load emoji image and resize
+            $emojiImage = $this->loadImage($emojiImagePath);
+            if ($emojiImage) {
+                $emojiWidth = imagesx($emojiImage);
+                $emojiHeight = imagesy($emojiImage);
+
+                // Resize emoji to fit badge
+                $resized = imagecreatetruecolor($iconSize, $iconSize);
+                imagesavealpha($resized, true);
+                imagealphablending($resized, true);
+                $trans = imagecolorallocatealpha($resized, 0, 0, 0, 127);
+                imagefill($resized, 0, 0, $trans);
+                imagecopyresampled($resized, $emojiImage, 0, 0, 0, 0, $iconSize, $iconSize, $emojiWidth, $emojiHeight);
+
+                // Place emoji centered in badge
+                $emojiX = ($badgeSize - $iconSize) / 2;
+                $emojiY = ($badgeSize - $iconSize) / 2;
+                imagecopy($badge, $resized, (int) $emojiX, (int) $emojiY, 0, 0, $iconSize, $iconSize);
+
+                imagedestroy($resized);
+                imagedestroy($emojiImage);
+            }
+
+            // Position badge in bottom-right of QR code
+            $x = $qrWidth - $badgeSize - $padding;
+            $y = $qrHeight - $badgeSize - $padding;
+
+            // Composite badge onto QR code
+            imagecopy($qrImage, $badge, $x, $y, 0, 0, $badgeSize, $badgeSize);
+
+            imagepng($qrImage, $qrPath);
+            imagedestroy($qrImage);
+            imagedestroy($badge);
+
+        } catch (\Exception $e) {
+            \Log::warning("Failed to overlay emoji on QR code: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get the local path to an emoji image, downloading from Twemoji CDN if needed.
+     */
+    protected function getEmojiImage(string $emoji): ?string
+    {
+        $codepoint = $this->emojiToCodepoint($emoji);
+        if (!$codepoint) {
+            return null;
+        }
+
+        // Check local cache
+        $cachePath = storage_path("app/emoji-cache/{$codepoint}.png");
+        if (file_exists($cachePath)) {
+            return $cachePath;
+        }
+
+        // Download from Twemoji CDN
+        $url = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/{$codepoint}.png";
 
         try {
-            $manager = new \Intervention\Image\ImageManager(
-                new \Intervention\Image\Drivers\Gd\Driver()
-            );
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'user_agent' => 'NestQR/1.0',
+                ],
+            ]);
 
-            $qrImage = $manager->read($qrPath);
-            $iconImage = $manager->read($iconPath)->resize($iconSize, $iconSize);
+            $imageData = @file_get_contents($url, false, $context);
 
-            // Position in bottom-right with small padding
-            $padding = (int) ($size * 0.02);
-            $x = $size - $iconSize - $padding;
-            $y = $size - $iconSize - $padding;
+            if ($imageData === false) {
+                \Log::warning("Failed to download Twemoji for codepoint: {$codepoint}");
+                return null;
+            }
 
-            // Add white background circle behind icon
-            $qrImage->place($iconImage, 'top-left', $x, $y);
-            $qrImage->save($qrPath);
+            // Ensure cache directory exists
+            $cacheDir = dirname($cachePath);
+            if (!is_dir($cacheDir)) {
+                mkdir($cacheDir, 0755, true);
+            }
+
+            file_put_contents($cachePath, $imageData);
+
+            return $cachePath;
+
         } catch (\Exception $e) {
-            \Log::warning("Failed to overlay icon on QR code: " . $e->getMessage());
+            \Log::warning("Twemoji download failed: " . $e->getMessage());
+            return null;
         }
+    }
+
+    /**
+     * Convert an emoji character to its hex codepoint(s) for Twemoji URL.
+     * Handles multi-codepoint emojis (e.g. flags, skin tones) with dashes.
+     * Strips variation selectors (fe0f) for simpler emoji.
+     */
+    protected function emojiToCodepoint(string $emoji): ?string
+    {
+        if (empty($emoji)) {
+            return null;
+        }
+
+        $codepoints = [];
+        $length = mb_strlen($emoji, 'UTF-8');
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = mb_substr($emoji, $i, 1, 'UTF-8');
+            $ord = mb_ord($char, 'UTF-8');
+
+            // Skip variation selectors and zero-width joiners for simple emoji
+            if ($ord === 0xFE0F) {
+                continue;
+            }
+
+            $codepoints[] = strtolower(dechex($ord));
+        }
+
+        if (empty($codepoints)) {
+            return null;
+        }
+
+        // Try with all codepoints joined by dash
+        $full = implode('-', $codepoints);
+
+        return $full;
+    }
+
+    /**
+     * Load an image from path, supporting PNG, JPEG, GIF, WEBP.
+     */
+    protected function loadImage(string $path): ?\GdImage
+    {
+        $info = @getimagesize($path);
+        if (!$info) {
+            return null;
+        }
+
+        return match ($info[2]) {
+            IMAGETYPE_PNG => @imagecreatefrompng($path),
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
+            IMAGETYPE_GIF => @imagecreatefromgif($path),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($path),
+            default => null,
+        };
     }
 
     public function getRedirectUrl(QrSlot $slot): string

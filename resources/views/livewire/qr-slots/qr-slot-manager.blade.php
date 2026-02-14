@@ -148,7 +148,7 @@
                 <div class="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 transition-opacity" wire:click="$set('showCreateModal', false)"></div>
 
                 <!-- Modal Panel -->
-                <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg transform transition-all border border-gray-200 dark:border-gray-700">
+                <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl transform transition-all border border-gray-200 dark:border-gray-700">
                     <!-- Header -->
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Create QR Code</h3>
@@ -172,21 +172,22 @@
                         </div>
 
                         <!-- Category Tabs -->
-                        <div class="flex flex-wrap gap-1.5 mb-3">
+                        <div class="flex gap-1.5 mb-3 overflow-x-auto pb-1 scrollbar-thin">
                             @php
                                 $categories = ['all' => 'All', 'real-estate' => 'Property', 'amenities' => 'Amenities', 'nature' => 'Nature', 'lifestyle' => 'Lifestyle', 'marketing' => 'Marketing', 'seasonal' => 'Seasonal', 'general' => 'General'];
                             @endphp
                             @foreach($categories as $key => $label)
                                 <button
+                                    type="button"
                                     @click="activeCategory = '{{ $key }}'"
                                     :class="activeCategory === '{{ $key }}' ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
-                                    class="px-2.5 py-1 rounded-full text-[11px] font-medium transition"
+                                    class="px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap flex-shrink-0"
                                 >{{ $label }}</button>
                             @endforeach
                         </div>
 
                         <!-- Icon Grid -->
-                        <div class="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-72 overflow-y-auto pr-1">
+                        <div class="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-80 overflow-y-auto pr-1">
                             @foreach($this->availableIcons as $icon)
                                 @php
                                     $canAccess = auth()->user()->canAccessIcon($icon);
