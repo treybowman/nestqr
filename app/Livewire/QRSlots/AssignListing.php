@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\QRSlots;
+namespace App\Livewire\QrSlots;
 
 use App\Models\Listing;
 use App\Models\QrSlot;

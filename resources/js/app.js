@@ -5,23 +5,21 @@ import Chart from 'chart.js/auto';
 window.Alpine = Alpine;
 window.Chart = Chart;
 
-Alpine.start();
-
-// Dark mode toggle
-document.addEventListener('alpine:init', () => {
-    Alpine.store('darkMode', {
-        on: localStorage.getItem('darkMode') === 'true' ||
-            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches),
-        toggle() {
-            this.on = !this.on;
-            localStorage.setItem('darkMode', this.on);
-            document.documentElement.classList.toggle('dark', this.on);
-        },
-        init() {
-            document.documentElement.classList.toggle('dark', this.on);
-        }
-    });
+// Dark mode store - must be registered BEFORE Alpine.start()
+Alpine.store('darkMode', {
+    on: localStorage.getItem('darkMode') === 'true' ||
+        (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+    toggle() {
+        this.on = !this.on;
+        localStorage.setItem('darkMode', this.on);
+        document.documentElement.classList.toggle('dark', this.on);
+    },
+    init() {
+        document.documentElement.classList.toggle('dark', this.on);
+    }
 });
+
+Alpine.start();
 
 // Photo gallery lightbox
 window.lightbox = function(images, startIndex = 0) {
