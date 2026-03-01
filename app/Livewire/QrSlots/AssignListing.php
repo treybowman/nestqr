@@ -2,6 +2,7 @@
 
 namespace App\Livewire\QrSlots;
 
+use App\Jobs\GenerateQRCodeJob;
 use App\Models\Listing;
 use App\Models\QrSlot;
 use Illuminate\Database\Eloquent\Collection;
@@ -65,6 +66,8 @@ class AssignListing extends Component
         // Assign the new listing
         $listing->assignToQrSlot($this->slot);
         $this->slot->refresh();
+
+        GenerateQRCodeJob::dispatch($this->slot);
 
         session()->flash('message', 'Listing assigned successfully.');
 

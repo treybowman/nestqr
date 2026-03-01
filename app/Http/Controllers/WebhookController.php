@@ -25,6 +25,27 @@ class WebhookController extends CashierController
     }
 
     /**
+     * Handle a failed Stripe invoice payment.
+     *
+     * When a subscription payment fails, downgrade the user to free
+     * so they lose access to paid features immediately.
+     */
+    public function handleInvoicePaymentFailed(array $payload): void
+    {
+        $stripeId = $payload['data']['object']['customer'] ?? null;
+
+        if (! $stripeId) {
+            return;
+        }
+
+        $user = $this->getUserByStripeId($stripeId);
+
+        if ($user) {
+            $user->update(['plan_tier' => 'free']);
+        }
+    }
+
+    /**
      * Look up a user by their Stripe customer ID.
      */
     protected function getUserByStripeId(string $stripeId): ?User

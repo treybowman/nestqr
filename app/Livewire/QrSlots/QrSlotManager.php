@@ -7,6 +7,7 @@ use App\Models\Icon;
 use App\Models\Listing;
 use App\Models\QrSlot;
 use App\Services\ImageService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -51,16 +52,22 @@ class QrSlotManager extends Component
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        abort_unless($user->canCreateQrSlot(), 403, 'You have reached the maximum number of QR slots for your plan.');
-
         $icon = Icon::findOrFail($this->selectedIconId);
         abort_unless($user->canAccessIcon($icon), 403, 'You do not have access to this icon on your current plan.');
 
-        $slot = QrSlot::create([
-            'user_id' => $user->id,
-            'icon_id' => $icon->id,
-            'icon_locked_at' => now(),
-        ]);
+        $slot = DB::transaction(function () use ($user, $icon) {
+            abort_unless(
+                $user->qrSlots()->lockForUpdate()->count() < $user->maxQrSlots(),
+                403,
+                'You have reached the maximum number of QR slots for your plan.'
+            );
+
+            return QrSlot::create([
+                'user_id' => $user->id,
+                'icon_id' => $icon->id,
+                'icon_locked_at' => now(),
+            ]);
+        });
 
         GenerateQRCodeJob::dispatch($slot);
 
@@ -113,6 +120,8 @@ class QrSlotManager extends Component
 
         $listing->assignToQrSlot($slot);
 
+        GenerateQRCodeJob::dispatch($slot->fresh());
+
         session()->flash('message', 'Listing assigned to QR slot successfully.');
     }
 
@@ -126,6 +135,7 @@ class QrSlotManager extends Component
         if ($slot->isAssigned()) {
             $listing = Listing::find($slot->current_listing_id);
             $listing?->unassignFromQrSlot();
+            GenerateQRCodeJob::dispatch($slot->fresh());
         }
 
         session()->flash('message', 'Listing unassigned from QR slot.');

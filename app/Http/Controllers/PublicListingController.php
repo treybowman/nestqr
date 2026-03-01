@@ -58,9 +58,14 @@ class PublicListingController extends Controller
         }
 
         $listings = $request->user()->listings()
-            ->where('status', 'active')
-            ->whereNull('qr_slot_id')
-            ->orWhere('qr_slot_id', $qrSlot->id)
+            ->where(function ($query) use ($qrSlot) {
+                $query->where('status', 'active')
+                    ->whereNull('qr_slot_id');
+            })
+            ->orWhere(function ($query) use ($request, $qrSlot) {
+                $query->where('user_id', $request->user()->id)
+                    ->where('qr_slot_id', $qrSlot->id);
+            })
             ->get();
 
         return view('qr-slots.assign', [

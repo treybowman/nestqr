@@ -95,7 +95,14 @@ class QrSlot extends Model
 
     public function getPublicUrl(): string
     {
-        $domain = $this->user?->preferred_domain ?? config('nestqr.primary_domain', 'nestqr.com');
+        $preferred = $this->user?->preferred_domain;
+        $primary = config('nestqr.primary_domain', 'nestqr.com');
+
+        if ($preferred && \App\Models\ActiveDomain::where('domain', $preferred)->exists()) {
+            $domain = $preferred;
+        } else {
+            $domain = $primary;
+        }
 
         return 'https://' . $domain . '/' . $this->short_code;
     }

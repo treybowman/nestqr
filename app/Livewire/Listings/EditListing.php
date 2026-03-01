@@ -136,8 +136,9 @@ class EditListing extends Component
 
         // Process new photos
         if (! empty($this->newPhotos)) {
+            $maxPhotos = config('nestqr.photo_max_count');
             $totalPhotos = $this->existingPhotos->count() + count($this->newPhotos);
-            abort_unless($totalPhotos <= 20, 422, 'A listing can have a maximum of 20 photos.');
+            abort_unless($totalPhotos <= $maxPhotos, 422, "A listing can have a maximum of {$maxPhotos} photos.");
 
             $tempPaths = [];
 

@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -85,7 +88,41 @@ class AdminUserController extends Controller
             return back()->with('error', 'You cannot delete your own account.');
         }
 
-        $user->delete();
+        $imageService = app(ImageService::class);
+
+        DB::transaction(function () use ($user, $imageService) {
+            // Delete all listing photos from storage
+            foreach ($user->listings as $listing) {
+                foreach ($listing->photos as $photo) {
+                    $imageService->deleteFile($photo->file_path);
+                    if ($photo->thumbnail_path) {
+                        $imageService->deleteFile($photo->thumbnail_path);
+                    }
+                }
+                $listing->photos()->delete();
+            }
+
+            // Delete all QR code files from storage
+            foreach ($user->qrSlots as $slot) {
+                if ($slot->short_code) {
+                    Storage::disk('public')->deleteDirectory("qr-codes/{$slot->short_code}");
+                }
+                $slot->scanAnalytics()->delete();
+            }
+
+            // Delete profile photo and custom logo
+            if ($user->photo_path) {
+                $imageService->deleteFile($user->photo_path);
+            }
+            if ($user->custom_logo_path) {
+                $imageService->deleteFile($user->custom_logo_path);
+            }
+
+            // Delete all user data
+            $user->listings()->forceDelete();
+            $user->qrSlots()->delete();
+            $user->delete();
+        });
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
@@ -128,7 +165,13 @@ class AdminUserController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $admin = User::findOrFail($adminId);
+        $admin = User::find($adminId);
+
+        if (! $admin) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->with('error', 'Your admin account no longer exists.');
+        }
 
         Auth::login($admin);
 

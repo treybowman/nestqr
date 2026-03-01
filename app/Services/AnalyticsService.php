@@ -92,14 +92,14 @@ class AnalyticsService
             ->orderBy('scanned_at', 'desc')
             ->get();
 
-        $csv = "Date,QR Code,Short Code,Listing,Referrer\n";
+        $csv = "Date,Short Code,URL,Listing,Referrer\n";
         foreach ($scans as $scan) {
             $csv .= implode(',', [
                 $scan->scanned_at->format('Y-m-d H:i:s'),
                 '"' . ($scan->qrSlot->short_code ?? 'N/A') . '"',
-                '"' . ($scan->qrSlot->short_code ?? '') . '"',
-                '"' . ($scan->listing->address ?? 'Unassigned') . '"',
-                '"' . ($scan->referrer ?? 'Direct') . '"',
+                '"' . ($scan->qrSlot?->getPublicUrl() ?? '') . '"',
+                '"' . str_replace('"', '""', $scan->listing->address ?? 'Unassigned') . '"',
+                '"' . str_replace('"', '""', $scan->referrer ?? 'Direct') . '"',
             ]) . "\n";
         }
 
