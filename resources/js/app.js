@@ -3,21 +3,11 @@ import Chart from 'chart.js/auto';
 
 window.Chart = Chart;
 
-// Register Alpine store via Livewire's bundled Alpine (do NOT import Alpine separately)
-document.addEventListener('alpine:init', () => {
-    Alpine.store('darkMode', {
-        on: localStorage.getItem('darkMode') === 'true' ||
-            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches),
-        toggle() {
-            this.on = !this.on;
-            localStorage.setItem('darkMode', this.on);
-            document.documentElement.classList.toggle('dark', this.on);
-        },
-        init() {
-            document.documentElement.classList.toggle('dark', this.on);
-        }
-    });
-});
+// Dark mode toggle — vanilla JS, no Alpine dependency
+window.toggleDarkMode = function () {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+};
 
 // Photo gallery lightbox
 window.lightbox = function(images, startIndex = 0) {

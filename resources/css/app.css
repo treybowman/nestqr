@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 [x-cloak] { display: none !important; }
+html:not(.dark) .theme-icon-dark { display: none; }
+html.dark .theme-icon-light { display: none; }
 
 @layer base {
     body {
