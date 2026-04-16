@@ -39,9 +39,6 @@ Route::get('/{shortCode}', [PublicListingController::class, 'redirect'])
 // Auth routes (provided by Breeze, we'll define them manually for completeness)
 require __DIR__.'/auth.php';
 
-// Impersonate start — intentionally outside auth: the one-time token is the only auth needed
-Route::get('/admin/users/{user}/impersonate/start', [AdminUserController::class, 'startImpersonating'])->name('admin.users.impersonate.start');
-
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
 

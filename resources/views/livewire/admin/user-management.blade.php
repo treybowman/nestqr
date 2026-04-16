@@ -105,10 +105,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                 <a href="{{ route('admin.users.show', $user) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">View</a>
                                 @if(!$user->is_admin)
-                                    <button type="button" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
-                                        onclick="impersonateUser('{{ route('admin.users.impersonate', $user) }}', '{{ addslashes($user->name) }}')">
-                                        Impersonate
-                                    </button>
+                                    <form method="POST" action="{{ route('admin.users.impersonate', $user) }}" class="inline"
+                                          onsubmit="return confirm('Impersonate {{ addslashes($user->name) }}?')">
+                                        @csrf
+                                        <button type="submit" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">Impersonate</button>
+                                    </form>
                                     <button wire:click="deleteUser({{ $user->id }})" wire:confirm="Are you sure you want to delete this user? This cannot be undone." class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
                                         Delete
                                     </button>

@@ -115,7 +115,7 @@
                 </button>
                 <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-100 ml-2 lg:ml-0">{{ $title ?? 'Dashboard' }}</h1>
                 <div class="ml-auto flex items-center space-x-4">
-                    @if(session('impersonating'))
+                    @if(session()->has('impersonating_from'))
                         <form method="POST" action="{{ route('admin.stop-impersonating') }}">
                             @csrf
                             <button type="submit" class="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium hover:bg-yellow-200 transition-colors">Stop Impersonating</button>
@@ -150,22 +150,5 @@
     </div>
     @livewireScripts
     @stack('scripts')
-    <script>
-    function impersonateUser(url, name) {
-        if (!confirm('Impersonate ' + name + '?')) return;
-        // Open tab synchronously (must happen directly from user gesture to avoid popup blockers)
-        const tab = window.open('', '_blank');
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-        })
-        .then(r => r.json())
-        .then(data => { tab.location.href = data.url; })
-        .catch(() => { tab.close(); alert('Failed to start impersonation.'); });
-    }
-    </script>
 </body>
 </html>

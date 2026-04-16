@@ -35,10 +35,11 @@
                 <div class="flex space-x-2">
                     <a href="{{ route('admin.users.edit', $user) }}" class="btn-secondary text-sm">Edit</a>
                     @if(!$user->is_admin)
-                        <button type="button" class="btn-primary text-sm"
-                            onclick="impersonateUser('{{ route('admin.users.impersonate', $user) }}', '{{ addslashes($user->name) }}')">
-                            Impersonate
-                        </button>
+                        <form method="POST" action="{{ route('admin.users.impersonate', $user) }}"
+                              onsubmit="return confirm('Impersonate {{ addslashes($user->name) }}?')">
+                            @csrf
+                            <button type="submit" class="btn-primary text-sm">Impersonate</button>
+                        </form>
                     @endif
                 </div>
             </div>

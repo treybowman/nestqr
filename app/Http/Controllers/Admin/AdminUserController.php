@@ -7,16 +7,13 @@ use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Services\ImageService;
 use App\Mail\AdminUserMail;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -231,7 +228,7 @@ class AdminUserController extends Controller
      * Issues a short-lived token so the caller can open the user's
      * session in a new tab without losing their own admin session.
      */
-    public function impersonate(User $user): JsonResponse|RedirectResponse
+    public function impersonate(User $user): RedirectResponse
     {
         if ($user->id === Auth::id()) {
             return back()->with('error', 'You cannot impersonate yourself.');
@@ -241,30 +238,7 @@ class AdminUserController extends Controller
             return back()->with('error', 'You cannot impersonate another admin.');
         }
 
-        $token = Str::random(40);
-        Cache::put("impersonate_token:{$token}", [
-            'user_id'  => $user->id,
-            'admin_id' => Auth::id(),
-        ], now()->addMinutes(2));
-
-        $url = route('admin.users.impersonate.start', ['user' => $user, 'token' => $token]);
-
-        return response()->json(['url' => $url]);
-    }
-
-    /**
-     * Start an impersonation session in a new tab using a one-time token.
-     */
-    public function startImpersonating(User $user, Request $request): RedirectResponse
-    {
-        $token = $request->query('token');
-        $data  = $token ? Cache::pull("impersonate_token:{$token}") : null;
-
-        if (! $data || $data['user_id'] !== $user->id) {
-            abort(403, 'Invalid or expired impersonation token.');
-        }
-
-        session()->put('impersonating_from', $data['admin_id']);
+        session()->put('impersonating_from', Auth::id());
 
         AdminAuditLog::record(
             'impersonate',
