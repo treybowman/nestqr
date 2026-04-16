@@ -35,7 +35,10 @@
                 <div class="flex space-x-2">
                     <a href="{{ route('admin.users.edit', $user) }}" class="btn-secondary text-sm">Edit</a>
                     @if(!$user->is_admin)
-                        <a href="{{ route('admin.users.impersonate', $user) }}" class="btn-primary text-sm" onclick="return confirm('Impersonate {{ $user->name }}?')">Impersonate</a>
+                        <button type="button" class="btn-primary text-sm"
+                            onclick="impersonateUser('{{ route('admin.users.impersonate', $user) }}', '{{ addslashes($user->name) }}')">
+                            Impersonate
+                        </button>
                     @endif
                 </div>
             </div>
@@ -43,6 +46,63 @@
                 <p class="mt-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">{{ $user->bio }}</p>
             @endif
         </div>
+
+        <!-- Subscription Info -->
+        <div class="card p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Subscription</h3>
+            @if($subscription)
+                @php
+                    $statusColors = [
+                        'active'            => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                        'trialing'          => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                        'past_due'          => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                        'canceled'          => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+                        'incomplete'        => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                        'incomplete_expired'=> 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                        'unpaid'            => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                        'paused'            => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                    ];
+                    $statusColor = $statusColors[$subscription->stripe_status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+                @endphp
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Status</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusColor }}">
+                            {{ str_replace('_', ' ', $subscription->stripe_status) }}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Stripe ID</p>
+                        <p class="text-sm font-mono text-gray-700 dark:text-gray-300 truncate">{{ $subscription->stripe_id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Trial Ends</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ $subscription->trial_ends_at ? $subscription->trial_ends_at->format('M j, Y') : '—' }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                            {{ $subscription->ends_at ? 'Cancels On' : 'Started' }}
+                        </p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ $subscription->ends_at
+                                ? $subscription->ends_at->format('M j, Y')
+                                : $subscription->created_at->format('M j, Y') }}
+                        </p>
+                    </div>
+                </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400">No active Stripe subscription. Plan is managed manually.</p>
+            @endif
+        </div>
+
+        <!-- Send Email -->
+        @if(session('success'))
+            <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 rounded-lg text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
 
         <!-- QR Codes -->
         <div class="card p-6 mb-6">
@@ -104,6 +164,29 @@
             @else
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No listings created.</p>
             @endif
+        </div>
+
+        <!-- Send Email -->
+        <div class="card p-6 mt-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Send Email to {{ $user->name }}</h3>
+            <form method="POST" action="{{ route('admin.users.send-email', $user) }}">
+                @csrf
+                <div class="space-y-4">
+                    <div>
+                        <label class="label" for="subject">Subject</label>
+                        <input type="text" name="subject" id="subject" value="{{ old('subject') }}" class="input-field" required>
+                        @error('subject') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="label" for="body">Message</label>
+                        <textarea name="body" id="body" rows="6" class="input-field" required>{{ old('body') }}</textarea>
+                        @error('body') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Send Email</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </x-layouts.app>

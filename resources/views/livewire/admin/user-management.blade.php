@@ -1,6 +1,13 @@
 <div>
+    <!-- Flash Message -->
+    @if(session('message'))
+        <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 rounded-lg text-sm">
+            {{ session('message') }}
+        </div>
+    @endif
+
     <!-- Search & Filters -->
-    <div class="card p-4 mb-6">
+    <div class="card p-4 mb-4">
         <div class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search users by name or email..." class="input-field">
@@ -12,8 +19,30 @@
                 <option value="unlimited">Unlimited</option>
                 <option value="company">Company</option>
             </select>
+            <a href="{{ route('admin.users.export') }}" class="btn-secondary whitespace-nowrap">Export CSV</a>
         </div>
     </div>
+
+    <!-- Bulk Action Bar -->
+    @if(count($selected) > 0)
+        <div class="mb-4 p-3 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-xl flex flex-wrap items-center gap-3">
+            <span class="text-sm font-medium text-primary-800 dark:text-primary-200">{{ count($selected) }} selected</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-primary-600 dark:text-primary-400">Change plan:</span>
+                @foreach(['free', 'pro', 'unlimited', 'company'] as $plan)
+                    <button wire:click="bulkChangePlan('{{ $plan }}')" wire:confirm="Change all selected users to {{ ucfirst($plan) }}?"
+                            class="text-xs px-2.5 py-1 rounded-lg border border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/50">
+                        {{ ucfirst($plan) }}
+                    </button>
+                @endforeach
+                <button wire:click="bulkDelete" wire:confirm="Permanently delete all selected users? This cannot be undone."
+                        class="text-xs px-2.5 py-1 rounded-lg border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">
+                    Delete Selected
+                </button>
+            </div>
+            <button wire:click="$set('selected', [])" class="ml-auto text-xs text-primary-600 dark:text-primary-400 hover:underline">Clear</button>
+        </div>
+    @endif
 
     <!-- Users Table -->
     <div class="card overflow-hidden">
@@ -21,6 +50,9 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
+                        <th class="px-4 py-3">
+                            <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Plan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">QR Codes</th>
@@ -31,7 +63,13 @@
                 </thead>
                 <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($this->users as $user)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition {{ in_array((string)$user->id, $selected) ? 'bg-primary-50/50 dark:bg-primary-900/10' : '' }}">
+                            <td class="px-4 py-4">
+                                @if(!$user->is_admin)
+                                    <input type="checkbox" wire:model.live="selected" value="{{ $user->id }}"
+                                           class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
@@ -65,10 +103,12 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $user->listings_count }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $user->created_at->format('M j, Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <a href="{{ route('admin.users.show', $user) }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">View</a>
                                 @if(!$user->is_admin)
-                                    <a href="{{ route('admin.users.impersonate', $user) }}" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
+                                    <button type="button" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
+                                        onclick="impersonateUser('{{ route('admin.users.impersonate', $user) }}', '{{ addslashes($user->name) }}')">
                                         Impersonate
-                                    </a>
+                                    </button>
                                     <button wire:click="deleteUser({{ $user->id }})" wire:confirm="Are you sure you want to delete this user? This cannot be undone." class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
                                         Delete
                                     </button>
@@ -77,7 +117,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
                                 No users found.
                             </td>
                         </tr>

@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Services\ImageService;
+use App\Mail\AdminUserMail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -44,8 +51,11 @@ class AdminUserController extends Controller
     {
         $user->load(['qrSlots.currentListing', 'listings.photos']);
 
+        $subscription = $user->subscription();
+
         return view('admin.users.show', [
-            'user' => $user,
+            'user'         => $user,
+            'subscription' => $subscription,
         ]);
     }
 
@@ -72,7 +82,23 @@ class AdminUserController extends Controller
             'is_admin' => ['boolean'],
         ]);
 
+        $original = $user->only(['name', 'email', 'plan_tier', 'is_admin']);
         $user->update($validated);
+
+        $changes = array_filter(array_map(function ($key) use ($original, $validated) {
+            if (isset($validated[$key]) && $original[$key] != $validated[$key]) {
+                return "{$key}: {$original[$key]} → {$validated[$key]}";
+            }
+            return null;
+        }, array_keys($original)));
+
+        AdminAuditLog::record(
+            'update_user',
+            "Updated user {$user->name} ({$user->email})" . ($changes ? ': ' . implode(', ', $changes) : ''),
+            'User',
+            $user->id,
+            ['changes' => array_values($changes)]
+        );
 
         return redirect()->route('admin.users.show', $user)
             ->with('success', 'User updated successfully.');
@@ -124,29 +150,128 @@ class AdminUserController extends Controller
             $user->delete();
         });
 
+        AdminAuditLog::record(
+            'delete_user',
+            "Deleted user {$user->name} ({$user->email})",
+            'User',
+            $user->id
+        );
+
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
     }
 
     /**
+     * Send a one-off email to a user from the admin panel.
+     */
+    public function sendEmail(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:255'],
+            'body'    => ['required', 'string', 'max:5000'],
+        ]);
+
+        Mail::to($user->email)->send(new AdminUserMail(
+            user: $user,
+            subject: $validated['subject'],
+            body: $validated['body'],
+            fromName: Auth::user()->name,
+        ));
+
+        AdminAuditLog::record(
+            'send_email',
+            "Sent email to {$user->name} ({$user->email}): {$validated['subject']}",
+            'User',
+            $user->id
+        );
+
+        return back()->with('success', "Email sent to {$user->name}.");
+    }
+
+    /**
+     * Export filtered users as CSV.
+     */
+    public function export(Request $request): Response
+    {
+        $users = User::query()
+            ->withCount(['qrSlots', 'listings'])
+            ->when($request->search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->when($request->plan, function ($query, $plan) {
+                $query->where('plan_tier', $plan);
+            })
+            ->latest()
+            ->get();
+
+        $csv = "Name,Email,Phone,Plan,QR Codes,Listings,Admin,Joined\n";
+        foreach ($users as $user) {
+            $csv .= implode(',', [
+                '"' . str_replace('"', '""', $user->name) . '"',
+                '"' . str_replace('"', '""', $user->email) . '"',
+                '"' . str_replace('"', '""', $user->phone ?? '') . '"',
+                $user->plan_tier,
+                $user->qr_slots_count,
+                $user->listings_count,
+                $user->is_admin ? 'Yes' : 'No',
+                $user->created_at->format('Y-m-d'),
+            ]) . "\n";
+        }
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="users-' . now()->format('Y-m-d') . '.csv"',
+        ]);
+    }
+
+    /**
      * Impersonate the specified user.
      *
-     * Stores the current admin's ID in the session so we can
-     * return to the admin account via stopImpersonating().
+     * Issues a short-lived token so the caller can open the user's
+     * session in a new tab without losing their own admin session.
      */
-    public function impersonate(User $user): RedirectResponse
+    public function impersonate(User $user): JsonResponse|RedirectResponse
     {
-        // Prevent impersonating yourself
         if ($user->id === Auth::id()) {
             return back()->with('error', 'You cannot impersonate yourself.');
         }
 
-        // Prevent impersonating other admins
         if ($user->is_admin) {
             return back()->with('error', 'You cannot impersonate another admin.');
         }
 
-        session()->put('impersonating_from', Auth::id());
+        $token = Str::random(40);
+        Cache::put("impersonate_token:{$token}", [
+            'user_id'  => $user->id,
+            'admin_id' => Auth::id(),
+        ], now()->addMinutes(2));
+
+        $url = route('admin.users.impersonate.start', ['user' => $user, 'token' => $token]);
+
+        return response()->json(['url' => $url]);
+    }
+
+    /**
+     * Start an impersonation session in a new tab using a one-time token.
+     */
+    public function startImpersonating(User $user, Request $request): RedirectResponse
+    {
+        $token = $request->query('token');
+        $data  = $token ? Cache::pull("impersonate_token:{$token}") : null;
+
+        if (! $data || $data['user_id'] !== $user->id) {
+            abort(403, 'Invalid or expired impersonation token.');
+        }
+
+        session()->put('impersonating_from', $data['admin_id']);
+
+        AdminAuditLog::record(
+            'impersonate',
+            "Impersonated user {$user->name} ({$user->email})",
+            'User',
+            $user->id
+        );
 
         Auth::login($user);
 

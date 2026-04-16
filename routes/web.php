@@ -9,6 +9,8 @@ use App\Http\Controllers\QrSlotController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\Admin\AdminCompanyController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminDomainController;
@@ -82,8 +84,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('users', AdminUserController::class)->except(['create', 'store']);
         Route::post('/users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
+        Route::get('/users/{user}/impersonate/start', [AdminUserController::class, 'startImpersonating'])->name('users.impersonate.start')->withoutMiddleware(['admin']);
         Route::post('/stop-impersonating', [AdminUserController::class, 'stopImpersonating'])->name('stop-impersonating');
 
         Route::resource('domains', AdminDomainController::class)->except(['show', 'edit', 'create']);
+        Route::resource('companies', AdminCompanyController::class)->only(['index', 'show', 'destroy']);
+        Route::get('/users/export', [AdminUserController::class, 'export'])->name('users.export');
+        Route::post('/users/{user}/send-email', [AdminUserController::class, 'sendEmail'])->name('users.send-email');
+        Route::get('/audit-log', [AdminAuditLogController::class, 'index'])->name('audit-log');
     });
 });

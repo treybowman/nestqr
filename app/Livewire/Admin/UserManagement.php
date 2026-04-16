@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Services\ImageService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -26,6 +27,9 @@ class UserManagement extends Component
     #[Url]
     public string $planFilter = 'all';
 
+    public array $selected = [];
+    public bool $selectAll = false;
+
     public function mount(): void
     {
         abort_unless(auth()->user()->is_admin, 403, 'Unauthorized. Admin access required.');
@@ -34,11 +38,90 @@ class UserManagement extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->selected = [];
+        $this->selectAll = false;
     }
 
     public function updatedPlanFilter(): void
     {
         $this->resetPage();
+        $this->selected = [];
+        $this->selectAll = false;
+    }
+
+    public function updatedSelectAll(bool $value): void
+    {
+        $this->selected = $value
+            ? $this->users->pluck('id')->map(fn ($id) => (string) $id)->toArray()
+            : [];
+    }
+
+    public function bulkChangePlan(string $plan): void
+    {
+        abort_unless(auth()->user()->is_admin, 403);
+        abort_if(empty($this->selected), 422, 'No users selected.');
+
+        $validPlans = ['free', 'pro', 'unlimited', 'company'];
+        abort_unless(in_array($plan, $validPlans), 422, 'Invalid plan tier.');
+
+        $users = User::whereIn('id', $this->selected)->get();
+
+        foreach ($users as $user) {
+            if ($user->is_admin || $user->id === auth()->id()) continue;
+            $oldPlan = $user->plan_tier;
+            $user->update(['plan_tier' => $plan]);
+            AdminAuditLog::record(
+                'plan_change',
+                "Bulk plan change: {$user->name} ({$user->email}) {$oldPlan} → {$plan}",
+                'User',
+                $user->id,
+                ['old_plan' => $oldPlan, 'new_plan' => $plan]
+            );
+        }
+
+        $this->selected = [];
+        $this->selectAll = false;
+        session()->flash('message', "Plan updated to " . ucfirst($plan) . " for {$users->count()} user(s).");
+    }
+
+    public function bulkDelete(): void
+    {
+        abort_unless(auth()->user()->is_admin, 403);
+        abort_if(empty($this->selected), 422, 'No users selected.');
+
+        $users = User::whereIn('id', $this->selected)
+            ->where('is_admin', false)
+            ->where('id', '!=', auth()->id())
+            ->get();
+
+        $imageService = app(ImageService::class);
+
+        foreach ($users as $user) {
+            DB::transaction(function () use ($user, $imageService) {
+                foreach ($user->listings as $listing) {
+                    foreach ($listing->photos as $photo) {
+                        $imageService->deleteFile($photo->file_path);
+                        if ($photo->thumbnail_path) $imageService->deleteFile($photo->thumbnail_path);
+                    }
+                    $listing->photos()->delete();
+                }
+                foreach ($user->qrSlots as $slot) {
+                    if ($slot->short_code) Storage::disk('public')->deleteDirectory("qr-codes/{$slot->short_code}");
+                    $slot->scanAnalytics()->delete();
+                }
+                if ($user->photo_path) $imageService->deleteFile($user->photo_path);
+                if ($user->custom_logo_path) $imageService->deleteFile($user->custom_logo_path);
+                $user->listings()->forceDelete();
+                $user->qrSlots()->delete();
+                $user->delete();
+            });
+
+            AdminAuditLog::record('delete_user', "Bulk deleted user {$user->name} ({$user->email})", 'User', $user->id);
+        }
+
+        $this->selected = [];
+        $this->selectAll = false;
+        session()->flash('message', "Deleted {$users->count()} user(s).");
     }
 
     #[Computed]
@@ -107,6 +190,13 @@ class UserManagement extends Component
             $user->delete();
         });
 
+        AdminAuditLog::record(
+            'delete_user',
+            "Deleted user {$user->name} ({$user->email})",
+            'User',
+            $user->id
+        );
+
         session()->flash('message', "User \"{$user->name}\" and all associated data deleted successfully.");
     }
 
@@ -118,7 +208,16 @@ class UserManagement extends Component
         abort_unless(in_array($plan, $validPlans), 422, 'Invalid plan tier.');
 
         $user = User::findOrFail($userId);
+        $oldPlan = $user->plan_tier;
         $user->update(['plan_tier' => $plan]);
+
+        AdminAuditLog::record(
+            'plan_change',
+            "Changed {$user->name} ({$user->email}) plan: {$oldPlan} → {$plan}",
+            'User',
+            $user->id,
+            ['old_plan' => $oldPlan, 'new_plan' => $plan]
+        );
 
         session()->flash('message', "Plan for \"{$user->name}\" updated to " . ucfirst($plan) . '.');
     }

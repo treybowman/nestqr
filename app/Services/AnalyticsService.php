@@ -120,13 +120,65 @@ class AnalyticsService
     // Platform-wide stats for admin
     public function getPlatformStats(): array
     {
+        $plans = config('nestqr.plans');
+
+        $usersByPlan = \App\Models\User::query()
+            ->selectRaw('plan_tier, COUNT(*) as count')
+            ->groupBy('plan_tier')
+            ->pluck('count', 'plan_tier')
+            ->toArray();
+
+        $activeSubsByPlan = DB::table('subscriptions')
+            ->where('stripe_status', 'active')
+            ->join('users', 'subscriptions.user_id', '=', 'users.id')
+            ->selectRaw('users.plan_tier, COUNT(*) as count')
+            ->groupBy('users.plan_tier')
+            ->pluck('count', 'plan_tier')
+            ->toArray();
+
+        $mrr = 0;
+        foreach ($activeSubsByPlan as $tier => $count) {
+            $mrr += ($plans[$tier]['price'] ?? 0) * $count;
+        }
+
+        $canceledThisMonth = DB::table('subscriptions')
+            ->where('stripe_status', 'canceled')
+            ->whereMonth('ends_at', now()->month)
+            ->whereYear('ends_at', now()->year)
+            ->count();
+
+        $newUsersThisMonth = \App\Models\User::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        // Signup trend: signups per day for the last 30 days
+        $signupTrend = \App\Models\User::where('created_at', '>=', now()->subDays(29)->startOfDay())
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Fill in zeros for missing days
+        $trendData = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trendData[$date] = $signupTrend[$date] ?? 0;
+        }
+
         return [
-            'total_users' => \App\Models\User::count(),
-            'total_scans' => ScanAnalytic::count(),
-            'total_qr_codes' => QrSlot::count(),
-            'total_listings' => \App\Models\Listing::count(),
-            'scans_today' => ScanAnalytic::whereDate('scanned_at', today())->count(),
+            'total_users'         => \App\Models\User::count(),
+            'total_scans'         => ScanAnalytic::count(),
+            'total_qr_slots'      => QrSlot::count(),
+            'total_listings'      => \App\Models\Listing::count(),
+            'scans_today'         => ScanAnalytic::whereDate('scanned_at', today())->count(),
             'new_users_this_week' => \App\Models\User::where('created_at', '>=', now()->subWeek())->count(),
+            'new_users_this_month' => $newUsersThisMonth,
+            'users_by_plan'       => $usersByPlan,
+            'active_subscriptions' => array_sum($activeSubsByPlan),
+            'mrr'                 => $mrr,
+            'canceled_this_month' => $canceledThisMonth,
+            'signup_trend'        => $trendData,
         ];
     }
 }
