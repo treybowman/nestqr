@@ -30,6 +30,9 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 // Stripe webhooks (must be before auth middleware)
 Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook'])->name('cashier.webhook');
 
+// Demo slug shown on marketing page
+Route::get('/Xk9mP2', fn () => redirect('/'));
+
 // QR Code redirect - the core public route
 Route::get('/{shortCode}', [PublicListingController::class, 'redirect'])
     ->where('shortCode', '[A-Za-z0-9]{6}')

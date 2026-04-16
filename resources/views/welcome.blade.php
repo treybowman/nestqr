@@ -88,20 +88,41 @@
                             <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
                             <div class="w-3 h-3 rounded-full bg-green-400"></div>
                         </div>
-                        <div class="mx-auto text-sm text-gray-400 dark:text-gray-500">app.nestqr.com</div>
+                        <div class="mx-auto text-sm text-gray-400 dark:text-gray-500">nestqr.com/Xk9mP2</div>
                     </div>
-                    <div class="p-8 grid grid-cols-3 gap-6">
-                        <div class="col-span-3 sm:col-span-1">
-                            <div class="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 rounded-xl flex items-center justify-center">
-                                <svg class="w-16 h-16 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <div class="p-6 grid grid-cols-5 gap-6">
+                        <!-- Photo -->
+                        <div class="col-span-5 sm:col-span-2">
+                            <div class="aspect-[4/3] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 rounded-xl flex items-center justify-center relative overflow-hidden">
+                                <svg class="w-12 h-12 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                <!-- QR badge -->
+                                <div class="absolute bottom-2 right-2 w-10 h-10 bg-white dark:bg-gray-900 rounded-lg shadow flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-span-3 sm:col-span-2 space-y-3">
-                            <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded-full w-3/4"></div>
-                            <div class="h-3 bg-gray-100 dark:bg-gray-800/50 rounded-full w-full"></div>
-                            <div class="h-3 bg-gray-100 dark:bg-gray-800/50 rounded-full w-5/6"></div>
+                        <!-- Listing details -->
+                        <div class="col-span-5 sm:col-span-3 flex flex-col justify-between space-y-3">
+                            <!-- Price -->
+                            <div class="h-5 bg-gray-900 dark:bg-gray-100 rounded-full w-2/5 opacity-80"></div>
+                            <!-- Address line 1 -->
+                            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded-full w-3/4"></div>
+                            <!-- Address line 2 -->
+                            <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded-full w-1/2"></div>
+                            <!-- Beds / Baths / Sqft badges -->
+                            <div class="flex space-x-2 pt-1">
+                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-16"></div>
+                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-16"></div>
+                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20"></div>
+                            </div>
+                            <!-- Description lines -->
+                            <div class="space-y-2 pt-1">
+                                <div class="h-2.5 bg-gray-100 dark:bg-gray-800/60 rounded-full w-full"></div>
+                                <div class="h-2.5 bg-gray-100 dark:bg-gray-800/60 rounded-full w-5/6"></div>
+                            </div>
+                            <!-- Buttons -->
                             <div class="flex space-x-3 pt-2">
-                                <div class="h-8 bg-primary-100 dark:bg-primary-900/30 rounded-lg w-24"></div>
+                                <div class="h-8 bg-primary-200 dark:bg-primary-900/50 rounded-lg w-28"></div>
                                 <div class="h-8 bg-gray-100 dark:bg-gray-800 rounded-lg w-20"></div>
                             </div>
                         </div>
