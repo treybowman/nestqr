@@ -164,11 +164,13 @@ class AdminUserController extends Controller
      */
     public function regenerateQrCodes(User $user): RedirectResponse
     {
+        $user->load('qrSlots');
+
         foreach ($user->qrSlots as $slot) {
-            GenerateQRCodeJob::dispatch($slot);
+            GenerateQRCodeJob::dispatchSync($slot);
         }
 
-        return back()->with('success', "Queued regeneration of {$user->qrSlots->count()} QR code(s) for {$user->name}.");
+        return back()->with('success', "Regenerated {$user->qrSlots->count()} QR code(s) for {$user->name}.");
     }
 
     /**
