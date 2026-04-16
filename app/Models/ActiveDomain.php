@@ -35,6 +35,6 @@ class ActiveDomain extends Model
 
     public function getFullDomainAttribute(): string
     {
-        return $this->domain . '.com';
+        return $this->domain; // domain now stored with TLD (e.g. nestqr.com, nestnyc.io)
     }
 }

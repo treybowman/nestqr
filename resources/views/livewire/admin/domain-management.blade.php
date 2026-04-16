@@ -4,7 +4,7 @@
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add Domain</h3>
         <form wire:submit="addDomain" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
-                <input wire:model="newDomain" type="text" placeholder="e.g. nestnyc" class="input-field">
+                <input wire:model="newDomain" type="text" placeholder="e.g. nestnyc.com" class="input-field">
                 @error('newDomain') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
             <div class="flex-1">
@@ -46,7 +46,7 @@
                                     <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
                                         <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                                     </div>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $domain->domain }}.com</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $domain->domain }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $domain->market_name }}</td>
