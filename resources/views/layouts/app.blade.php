@@ -153,6 +153,8 @@
     <script>
     function impersonateUser(url, name) {
         if (!confirm('Impersonate ' + name + '?')) return;
+        // Open tab synchronously (must happen directly from user gesture to avoid popup blockers)
+        const tab = window.open('', '_blank');
         fetch(url, {
             method: 'POST',
             headers: {
@@ -161,7 +163,8 @@
             },
         })
         .then(r => r.json())
-        .then(data => window.open(data.url, '_blank'));
+        .then(data => { tab.location.href = data.url; })
+        .catch(() => { tab.close(); alert('Failed to start impersonation.'); });
     }
     </script>
 </body>
