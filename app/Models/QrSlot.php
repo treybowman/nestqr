@@ -98,8 +98,10 @@ class QrSlot extends Model
         $preferred = $this->user?->preferred_domain;
         $primary = config('nestqr.primary_domain', 'nestqr.com');
 
-        if ($preferred && \App\Models\ActiveDomain::where('domain', $preferred)->exists()) {
-            $domain = $preferred;
+        if ($preferred) {
+            $activeDomain = \App\Models\ActiveDomain::where('domain', $preferred)->first();
+            // Domains are stored without TLD; use the full_domain accessor which appends .com
+            $domain = $activeDomain ? $activeDomain->full_domain : $primary;
         } else {
             $domain = $primary;
         }

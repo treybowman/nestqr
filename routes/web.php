@@ -39,6 +39,9 @@ Route::get('/{shortCode}', [PublicListingController::class, 'redirect'])
 // Auth routes (provided by Breeze, we'll define them manually for completeness)
 require __DIR__.'/auth.php';
 
+// Impersonate start — intentionally outside auth: the one-time token is the only auth needed
+Route::get('/admin/users/{user}/impersonate/start', [AdminUserController::class, 'startImpersonating'])->name('admin.users.impersonate.start');
+
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -82,15 +85,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
 
+        // Export must be before resource so /users/export isn't captured as /users/{user}
+        Route::get('/users/export', [AdminUserController::class, 'export'])->name('users.export');
         Route::resource('users', AdminUserController::class)->except(['create', 'store']);
         Route::post('/users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
-        Route::get('/users/{user}/impersonate/start', [AdminUserController::class, 'startImpersonating'])->name('users.impersonate.start')->withoutMiddleware(['admin']);
+        Route::post('/users/{user}/send-email', [AdminUserController::class, 'sendEmail'])->name('users.send-email');
         Route::post('/stop-impersonating', [AdminUserController::class, 'stopImpersonating'])->name('stop-impersonating');
 
         Route::resource('domains', AdminDomainController::class)->except(['show', 'edit', 'create']);
         Route::resource('companies', AdminCompanyController::class)->only(['index', 'show', 'destroy']);
-        Route::get('/users/export', [AdminUserController::class, 'export'])->name('users.export');
-        Route::post('/users/{user}/send-email', [AdminUserController::class, 'sendEmail'])->name('users.send-email');
         Route::get('/audit-log', [AdminAuditLogController::class, 'index'])->name('audit-log');
     });
 });
