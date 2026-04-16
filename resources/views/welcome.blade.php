@@ -79,9 +79,10 @@
                 </div>
             </div>
 
-            <!-- Hero mockup / illustration -->
-            <div class="mt-16 lg:mt-20 max-w-3xl mx-auto">
+            <!-- Hero mockup / illustration — mirrors the actual public listing page -->
+            <div class="mt-16 lg:mt-20 max-w-sm mx-auto">
                 <div class="relative rounded-2xl bg-white dark:bg-gray-900 shadow-2xl shadow-gray-300/50 dark:shadow-black/40 border border-gray-200 dark:border-gray-800 overflow-hidden">
+                    <!-- Browser chrome -->
                     <div class="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                         <div class="flex space-x-2">
                             <div class="w-3 h-3 rounded-full bg-red-400"></div>
@@ -90,40 +91,57 @@
                         </div>
                         <div class="mx-auto text-sm text-gray-400 dark:text-gray-500">nestqr.com/Xk9mP2</div>
                     </div>
-                    <div class="p-6 grid grid-cols-5 gap-6">
-                        <!-- Photo -->
-                        <div class="col-span-5 sm:col-span-2">
-                            <div class="aspect-[4/3] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 rounded-xl flex items-center justify-center relative overflow-hidden">
-                                <svg class="w-12 h-12 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                <!-- QR badge -->
-                                <div class="absolute bottom-2 right-2 w-10 h-10 bg-white dark:bg-gray-900 rounded-lg shadow flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                                </div>
+
+                    <!-- Photo -->
+                    <div class="aspect-[4/3] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 flex items-center justify-center">
+                        <svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+
+                    <!-- Property info -->
+                    <div class="px-4 pt-4 pb-5 space-y-3">
+                        <!-- Price -->
+                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">$749,000</div>
+
+                        <!-- Address -->
+                        <div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">2847 Willow Creek Drive</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Austin, TX 78701</div>
+                        </div>
+
+                        <!-- Beds / Baths / SqFt -->
+                        <div class="grid grid-cols-3 gap-2 py-3 border-y border-gray-200 dark:border-gray-700 text-center">
+                            <div>
+                                <div class="text-base font-bold text-gray-900 dark:text-gray-100">4</div>
+                                <div class="text-[10px] uppercase tracking-wider text-gray-400">Beds</div>
+                            </div>
+                            <div>
+                                <div class="text-base font-bold text-gray-900 dark:text-gray-100">3</div>
+                                <div class="text-[10px] uppercase tracking-wider text-gray-400">Baths</div>
+                            </div>
+                            <div>
+                                <div class="text-base font-bold text-gray-900 dark:text-gray-100">2,150</div>
+                                <div class="text-[10px] uppercase tracking-wider text-gray-400">Sq Ft</div>
                             </div>
                         </div>
-                        <!-- Listing details -->
-                        <div class="col-span-5 sm:col-span-3 flex flex-col justify-between space-y-3">
-                            <!-- Price -->
-                            <div class="h-5 bg-gray-900 dark:bg-gray-100 rounded-full w-2/5 opacity-80"></div>
-                            <!-- Address line 1 -->
-                            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded-full w-3/4"></div>
-                            <!-- Address line 2 -->
-                            <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded-full w-1/2"></div>
-                            <!-- Beds / Baths / Sqft badges -->
-                            <div class="flex space-x-2 pt-1">
-                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-16"></div>
-                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-16"></div>
-                                <div class="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20"></div>
+
+                        <!-- Agent card -->
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-sm font-bold text-primary-600 dark:text-primary-400">S</span>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-gray-900 dark:text-gray-100">Sarah Mitchell</div>
+                                    <div class="text-[11px] text-gray-500 dark:text-gray-400">(512) 555-0192</div>
+                                </div>
                             </div>
-                            <!-- Description lines -->
-                            <div class="space-y-2 pt-1">
-                                <div class="h-2.5 bg-gray-100 dark:bg-gray-800/60 rounded-full w-full"></div>
-                                <div class="h-2.5 bg-gray-100 dark:bg-gray-800/60 rounded-full w-5/6"></div>
-                            </div>
-                            <!-- Buttons -->
-                            <div class="flex space-x-3 pt-2">
-                                <div class="h-8 bg-primary-200 dark:bg-primary-900/50 rounded-lg w-28"></div>
-                                <div class="h-8 bg-gray-100 dark:bg-gray-800 rounded-lg w-20"></div>
+                            <div class="grid grid-cols-2 gap-2 mt-3">
+                                <div class="h-7 bg-primary-500 rounded-lg flex items-center justify-center">
+                                    <span class="text-[11px] font-semibold text-white">Call</span>
+                                </div>
+                                <div class="h-7 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                    <span class="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Email</span>
+                                </div>
                             </div>
                         </div>
                     </div>
