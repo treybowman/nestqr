@@ -7,6 +7,7 @@ use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Services\ImageService;
 use App\Mail\AdminUserMail;
+use App\Jobs\GenerateQRCodeJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -156,6 +157,18 @@ class AdminUserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    /**
+     * Regenerate all QR code images for a user.
+     */
+    public function regenerateQrCodes(User $user): RedirectResponse
+    {
+        foreach ($user->qrSlots as $slot) {
+            GenerateQRCodeJob::dispatch($slot);
+        }
+
+        return back()->with('success', "Queued regeneration of {$user->qrSlots->count()} QR code(s) for {$user->name}.");
     }
 
     /**

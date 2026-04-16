@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('users', AdminUserController::class)->except(['create', 'store']);
         Route::post('/users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
         Route::post('/users/{user}/send-email', [AdminUserController::class, 'sendEmail'])->name('users.send-email');
+        Route::post('/users/{user}/regenerate-qr', [AdminUserController::class, 'regenerateQrCodes'])->name('users.regenerate-qr');
         Route::post('/stop-impersonating', [AdminUserController::class, 'stopImpersonating'])->name('stop-impersonating');
 
         Route::resource('domains', AdminDomainController::class)->except(['show', 'edit', 'create']);

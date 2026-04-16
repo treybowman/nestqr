@@ -107,7 +107,15 @@
 
         <!-- QR Codes -->
         <div class="card p-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">QR Codes ({{ $user->qrSlots->count() }})</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">QR Codes ({{ $user->qrSlots->count() }})</h3>
+                @if($user->qrSlots->count() > 0)
+                    <form method="POST" action="{{ route('admin.users.regenerate-qr', $user) }}">
+                        @csrf
+                        <button type="submit" class="btn-secondary text-xs">Regenerate All QRs</button>
+                    </form>
+                @endif
+            </div>
             @if($user->qrSlots->count() > 0)
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     @foreach($user->qrSlots as $slot)
